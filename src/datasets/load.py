@@ -1019,7 +1019,10 @@ def dataset_module_factory(
                     f"Revision '{revision}' doesn't exist for dataset '{path}' on the Hub."
                 ) from e
         except Exception as e1:
-            # All the attempts failed, before raising the error we should check if the module is already cached
+            # All the attempts failed, before raising the error we should check if the module is already cached.
+            # However, if the revision explicitly doesn't exist, we should not fall back to cache.
+            if isinstance(e1.__cause__, RevisionNotFoundError):
+                raise e1 from None
             try:
                 return CachedDatasetModuleFactory(path, cache_dir=cache_dir).get_module()
             except Exception:
